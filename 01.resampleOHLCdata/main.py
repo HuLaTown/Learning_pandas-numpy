@@ -25,3 +25,7 @@ ohlc_dict = {
 df = df.set_index(['datetime'])
 
 df.resample('5min', how=ohlc_dict, label='right', closed='right')
+
+# TODO prevent NAN data beyond the trading time
+# TODO shift the resampled data in order to show the price of 10:00
+# TODO align data such as 11:30
