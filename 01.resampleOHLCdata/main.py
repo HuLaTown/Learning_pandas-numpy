@@ -38,6 +38,7 @@ def data_process(bin_size, source_file_path, result_file_path):
         tradedate_year  = int(tradedate.strftime('%Y'))
         tradedate_month = int(tradedate.strftime('%m'))
         tradedate_day   = int(tradedate.strftime('%d'))
+        print tradedate.strftime('%Y%m%d')
         # for AM
         df_todo = df_todo[df_todo.index >= datetime(tradedate_year, tradedate_month, tradedate_day, 9, 30, 0)]
         dftmp   = df_todo[df_todo.index <= datetime(tradedate_year, tradedate_month, tradedate_day, 11, 30, 0)]
@@ -55,7 +56,10 @@ def data_process(bin_size, source_file_path, result_file_path):
             dftmp[dftmp.index == datetime(tradedate_year, tradedate_month, tradedate_day, 11, 30+shift_am, 0)].close
         volume = \
             dftmp[dftmp.index == datetime(tradedate_year, tradedate_month, tradedate_day, 11, 30+shift_am, 0)].volume
-        if bin_size != '1' or shift_am > 0:
+
+        is_empty = \
+            dftmp[dftmp.index == datetime(tradedate_year, tradedate_month, tradedate_day, 11, 30 + shift_am, 0)].empty
+        if not is_empty and bin_size != '1':
             # (2) remove the outsider
             dftmp = dftmp[dftmp.index != datetime(tradedate_year, tradedate_month, tradedate_day, 11, 30 + shift_am, 0)]
             # (3) add back with "11:30"
