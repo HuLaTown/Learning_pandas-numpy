@@ -31,7 +31,7 @@ def data_process(bin_size, source_file_path, result_file_path):
     shift_am = 30 % int(bin_size)
     shift_pm = -(60 % int(bin_size))
 
-    # TODO foreach trade date, resample am & pm data according to the bin size
+    # foreach trade date, resample am & pm data according to the bin size
     df_todo = df
     df_result = pd.DataFrame()
     for tradedate in tradedate_list:
@@ -42,6 +42,10 @@ def data_process(bin_size, source_file_path, result_file_path):
         # for AM
         df_todo = df_todo[df_todo.index >= datetime(tradedate_year, tradedate_month, tradedate_day, 9, 30, 0)]
         dftmp   = df_todo[df_todo.index <= datetime(tradedate_year, tradedate_month, tradedate_day, 11, 30, 0)]
+        index = pd.date_range(start=datetime(tradedate_year, tradedate_month, tradedate_day, 9, 31, 0),
+                              end=datetime(tradedate_year, tradedate_month, tradedate_day, 11, 30, 0), period=120,
+                              freq='min')
+        dftmp = pd.DataFrame(dftmp, index)
 
         dftmp   = dftmp.resample(bin_size+'min', how=ohlc_dict, label='right', closed='right')
         # align the "11:30" data.
@@ -72,13 +76,17 @@ def data_process(bin_size, source_file_path, result_file_path):
         # for PM
         df_todo = df_todo[df_todo.index >= datetime(int(tradedate_year), int(tradedate_month), int(tradedate_day), 13, 0, 0)]
         dftmp   = df_todo[df_todo.index <= datetime(int(tradedate_year), int(tradedate_month), int(tradedate_day), 15, 0, 0)]
+        index = pd.date_range(start=datetime(tradedate_year, tradedate_month, tradedate_day, 13, 1, 0),
+                              end=datetime(tradedate_year, tradedate_month, tradedate_day, 15, 0, 0),
+                              period=120, freq='min')
+        dftmp = pd.DataFrame(dftmp, index)
 
         dftmp   = dftmp.resample(bin_size+'min', how=ohlc_dict, label='right', closed='right', base=shift_pm)
         # append PM data to the result data frame
         df_result = df_result.append(dftmp)
 
     df_result = df_result[['open', 'high', 'close', 'low', 'volume']]
-    df_result.to_csv(result_file_path)
+    df_result.to_csv(result_file_path, na_rep='NAN')
 
 
 def main(argv):
